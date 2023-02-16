@@ -1,0 +1,10 @@
+app.sylius_payment:
+    class: Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder
+    arguments: [ Tsetsee\SyliusQpayPlugin\Payum\QpayPaymentGatewayFactory ]
+    tags:
+      - { name: payum.gateway_factory_builder, factory: sylius_payment }
+
+Tsetsee\SyliusQpayPlugin\Form\Type\QpayGatewayConfigurationType:
+    tags:
+      - { name: sylius.gateway_configuration_type, type: sylius_payment, label: 'Sylius Payment' }
+      - { name: form.type }
