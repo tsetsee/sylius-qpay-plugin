@@ -2,7 +2,9 @@
 
 <container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <service id="Acme\SyliusExamplePlugin\Controller\GreetingController" autowire="true" autoconfigure="true" public="true" />
-        <!-- Put your services here -->
+        <service id="Tsetsee\SyliusQpayPlugin\Form\Type\QpayGatewayConfigurationType">
+            <tag name="sylius.gateway_configuration_type" type="sylius_payment" label="Qpay Payment" />
+            <tag name="form.type" />
+        </service>
     </services>
 </container>
