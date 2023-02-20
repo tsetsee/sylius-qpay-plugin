@@ -4,21 +4,26 @@ declare(strict_types=1);
 
 namespace Tsetsee\SyliusQpayPlugin\Payum\Action;
 
+use GuzzleHttp\Exception\RequestException;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
-use Tsetsee\SyliusQpayPlugin\Payum\QpayApi;
+use Payum\Core\Exception\RequestNotSupportedException;
+use Payum\Core\Exception\UnsupportedApiException;
+use Payum\Core\Request\Capture;
+use Sylius\Component\Core\Model\OrderInterface;
+use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
+use Tsetsee\Qpay\Api\DTO\CreateInvoiceRequest;
+use Tsetsee\Qpay\Api\Exception\BadResponseException;
+use Tsetsee\Qpay\Api\QPayApi;
+use Tsetsee\SyliusQpayPlugin\Payum\SyliusApi;
 
 final class CaptureAction implements ActionInterface, ApiAwareInterface
 {
-    /** @var Client */
-    private $client;
-
     /** @var SyliusApi */
     private $api;
 
-    public function __construct($client)
+    public function __construct(private QPayApi $client)
     {
-        $this->client = $client;
     }
 
     public function execute($request): void
@@ -27,19 +32,33 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
 
         /** @var SyliusPaymentInterface $payment */
         $payment = $request->getModel();
+        /** @var OrderInterface $order */
+        $order = $payment->getOrder();
+
+        $details = [
+            'status' => 0,
+        ];
 
         try {
-            $response = $this->client->request('POST', 'https://sylius-payment.free.beeceptor.com', [
-                'body' => json_encode([
-                    'price' => $payment->getAmount(),
-                    'currency' => $payment->getCurrencyCode(),
-                    'api_key' => $this->api->getApiKey(),
-                ]),
-            ]);
+            $invoice = $this->client->createInvoice(CreateInvoiceRequest::from([
+                'invoiceCode' => $this->api->getInvoiceCode(),
+                'senderInvoiceNo' => $order->getNumber(),
+                'invoiceReceiverCode' => $order->getUser()?->getUsernameCanonical(),
+                'invoiceDescription' => '',
+                'senderBranchCode' => 'CENTRAL',
+                'amount' => $payment->getAmount(),
+                'callbackUrl' => '',
+            ]));
+
+            $details['invoice'] = $invoice->toArray();
         } catch (RequestException $exception) {
             $response = $exception->getResponse();
+            $details['status'] = $response?->getStatusCode();
+        } catch(BadResponseException $e) {
+            $details['status'] = 1;
+            $details['error'] = $e->getMessage();
         } finally {
-            $payment->setDetails(['status' => $response->getStatusCode()]);
+            $payment->setDetails($details);
         }
     }
 
@@ -53,7 +72,7 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
 
     public function setApi($api): void
     {
-        if (!$api instanceof QpayApi) {
+        if (!$api instanceof SyliusApi) {
             throw new UnsupportedApiException('Not supported. Expected an instance of ' . SyliusApi::class);
         }
 

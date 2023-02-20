@@ -1,6 +1,7 @@
 services:
     app:
-        image: sylius/standard:1.11-traditional-alpine
+        # image: sylius/standard:1.11-traditional-alpine
+        build: .
         environment:
             APP_ENV: "dev"
             DATABASE_URL: "mysql://root:mysql@mysql/sylius_%kernel.environment%?charset=utf8mb4"
@@ -8,7 +9,7 @@ services:
             PHP_DATE_TIMEZONE: "Europe/Warsaw"
         volumes:
             - ./:/app:delegated
-            - ./.docker/php/php.ini:/etc/php8/php.ini:delegated
+            - ./.docker/php/php.ini:/etc/php81/php.ini:delegated
             - ./.docker/nginx/nginx.conf:/etc/nginx/nginx.conf:delegated
         ports:
             - 8082:80

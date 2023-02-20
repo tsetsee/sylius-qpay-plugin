@@ -1,6 +1,8 @@
 /vendor/
 /node_modules/
 /composer.lock
+/symfony.lock
+/supervisord.log
 
 /etc/build/*
 !/etc/build/.gitignore

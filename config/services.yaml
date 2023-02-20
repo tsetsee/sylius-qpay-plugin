@@ -16,3 +16,9 @@ services:
         arguments: [ Tsetsee\SyliusQpayPlugin\Payum\QpayPaymentGatewayFactory ]
         tags:
           - { name: payum.gateway_factory_builder, factory: sylius_payment }
+
+    Tsetsee\SyliusQpayPlugin\Payum\Action\CaptureAction:
+        public: true
+        arguments: ['@qpay.client']
+        tags:
+            - {name: payum.action, factory: sylius_payment, alias: payum.action.capture}

@@ -10,6 +10,10 @@ use Tsetsee\SyliusQpayPlugin\Payum\Action\StatusAction;
 
 final class QpayPaymentGatewayFactory extends GatewayFactory
 {
+    public function __construct()
+    {
+    }
+
     protected function populateConfig(ArrayObject $config): void
     {
         $config->defaults([
@@ -19,7 +23,11 @@ final class QpayPaymentGatewayFactory extends GatewayFactory
         ]);
 
         $config['payum.api'] = function (ArrayObject $config) {
-            return new QpayApi($config['api_key']);
+            return new SyliusApi(
+                username: (string) ($config['username']),
+                password: (string) $config['password'],
+                env: (string) ($config['env']),
+            );
         };
     }
 }

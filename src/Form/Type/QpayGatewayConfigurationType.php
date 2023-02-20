@@ -12,6 +12,8 @@ final class QpayGatewayConfigurationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('api_key', TextType::class);
+        $builder
+            ->add('invoiceCode', TextType::class)
+        ;
     }
 }
