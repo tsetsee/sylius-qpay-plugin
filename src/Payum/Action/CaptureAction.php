@@ -54,7 +54,7 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
                 $invoice = $client->createInvoice(CreateInvoiceRequest::from([
                     'invoiceCode' => $this->api->getInvoiceCode(),
                     'senderInvoiceNo' => $order->getNumber(),
-                    'invoiceReceiverCode' => $order->getUser()?->getUsernameCanonical(),
+                    'invoiceReceiverCode' => $order->getUser()?->getUsernameCanonical() ?? $order->getNumber(),
                     'invoiceDescription' => 'purchasement of order ' . $order->getNumber(),
                     'senderBranchCode' => 'CENTRAL',
                     'amount' => $payment->getAmount() / 100.0,

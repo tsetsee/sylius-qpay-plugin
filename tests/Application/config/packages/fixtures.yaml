@@ -1,0 +1,20 @@
+sylius_fixtures:
+    suites:
+        default:
+            fixtures:
+                payment_method:
+                    options:
+                        custom:
+                            qpay:
+                                code: 'qpay'
+                                name: 'QPay Payment'
+                                gatewayName: 'QPay Payment'
+                                gatewayFactory: 'qpay_payment'
+                                gatewayConfig:
+                                    username: 'TEST_MERCHANT'
+                                    password: '123456'
+                                    env: sandbox
+                                    invoiceCode: 'TEST_INVOICE'
+                                channels:
+                                    - 'FASHION_WEB'
+                                enabled: true

@@ -15,13 +15,14 @@ final class StatusAction implements ActionInterface
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
+        /** @var GetStatusInterface $request */
         /** @var SyliusPaymentInterface $payment */
         $payment = $request->getFirstModel();
 
         $details = $payment->getDetails();
 
         if (0 === $details['status']) {
-            $request->markCaptured();
+            $request->markAuthorized();
 
             return;
         }
