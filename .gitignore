@@ -3,6 +3,8 @@
 /composer.lock
 /symfony.lock
 /supervisord.log
+/supervisord.pid
+/docker-compose.override.yml
 
 /etc/build/*
 !/etc/build/.gitignore
