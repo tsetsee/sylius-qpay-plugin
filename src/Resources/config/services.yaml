@@ -1,4 +1,4 @@
-app.sylius_payment:
+qpay.sylius_payment:
     class: Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder
     arguments: [ Tsetsee\SyliusQpayPlugin\Payum\QpayPaymentGatewayFactory ]
     tags:

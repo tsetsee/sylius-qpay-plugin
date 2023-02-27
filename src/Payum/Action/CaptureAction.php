@@ -10,6 +10,7 @@ use Payum\Core\ApiAwareInterface;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Exception\UnsupportedApiException;
 use Payum\Core\Request\Capture;
+use Psr\Log\LoggerInterface;
 use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
 use Tsetsee\Qpay\Api\DTO\CreateInvoiceRequest;
@@ -22,7 +23,7 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
     /** @var SyliusApi */
     private $api;
 
-    public function __construct(private QPayApi $client)
+    public function __construct(private LoggerInterface $logger)
     {
     }
 
@@ -40,17 +41,28 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
         ];
 
         try {
-            $invoice = $this->client->createInvoice(CreateInvoiceRequest::from([
-                'invoiceCode' => $this->api->getInvoiceCode(),
-                'senderInvoiceNo' => $order->getNumber(),
-                'invoiceReceiverCode' => $order->getUser()?->getUsernameCanonical(),
-                'invoiceDescription' => '',
-                'senderBranchCode' => 'CENTRAL',
-                'amount' => $payment->getAmount(),
-                'callbackUrl' => '',
-            ]));
+            $client = new QPayApi(
+                username: $this->api->getUsername(),
+                password: $this->api->getPassword(),
+                env: $this->api->getEnv(),
+                options: ['logger' => $this->logger],
+            );
 
-            $details['invoice'] = $invoice->toArray();
+            if ($payment->getAmount() === null) {
+                $details['status'] = 3;
+            } else {
+                $invoice = $client->createInvoice(CreateInvoiceRequest::from([
+                    'invoiceCode' => $this->api->getInvoiceCode(),
+                    'senderInvoiceNo' => $order->getNumber(),
+                    'invoiceReceiverCode' => $order->getUser()?->getUsernameCanonical(),
+                    'invoiceDescription' => 'purchasement of order ' . $order->getNumber(),
+                    'senderBranchCode' => 'CENTRAL',
+                    'amount' => $payment->getAmount() / 100.0,
+                    'callbackUrl' => '',
+                ]));
+
+                $details['invoice'] = $invoice->toArray();
+            }
         } catch (RequestException $exception) {
             $response = $exception->getResponse();
             $details['status'] = $response?->getStatusCode();

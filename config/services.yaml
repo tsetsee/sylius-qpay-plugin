@@ -19,6 +19,7 @@ services:
 
     Tsetsee\SyliusQpayPlugin\Payum\Action\CaptureAction:
         public: true
-        arguments: ['@qpay.client']
+        arguments:
+            - '@logger'
         tags:
             - {name: payum.action, factory: sylius_payment, alias: payum.action.capture}

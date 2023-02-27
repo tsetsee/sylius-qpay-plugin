@@ -6,18 +6,15 @@ namespace Tsetsee\SyliusQpayPlugin\Payum;
 
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\GatewayFactory;
+use Tsetsee\Qpay\Api\Enum\Env;
 use Tsetsee\SyliusQpayPlugin\Payum\Action\StatusAction;
 
 final class QpayPaymentGatewayFactory extends GatewayFactory
 {
-    public function __construct()
-    {
-    }
-
     protected function populateConfig(ArrayObject $config): void
     {
         $config->defaults([
-            'payum.factory_name' => 'qpay_payment',
+            'payum.factory_name' => 'qpay',
             'payum.factory_title' => 'Qpay Payment',
             'payum.action.status' => new StatusAction(),
         ]);
@@ -26,7 +23,8 @@ final class QpayPaymentGatewayFactory extends GatewayFactory
             return new SyliusApi(
                 username: (string) ($config['username']),
                 password: (string) $config['password'],
-                env: (string) ($config['env']),
+                env: Env::from($config['env']),
+                invoiceCode: (string) $config['invoiceCode'],
             );
         };
     }
