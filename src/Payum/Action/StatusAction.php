@@ -6,6 +6,7 @@ namespace Tsetsee\SyliusQpayPlugin\Payum\Action;
 
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Exception\RequestNotSupportedException;
+use Payum\Core\Request\Generic;
 use Payum\Core\Request\GetStatusInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
 
@@ -15,14 +16,15 @@ final class StatusAction implements ActionInterface
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
-        /** @var GetStatusInterface $request */
+        /** @var Generic $request */
         /** @var SyliusPaymentInterface $payment */
         $payment = $request->getFirstModel();
 
         $details = $payment->getDetails();
 
+        /** @var GetStatusInterface $request */
         if (0 === $details['status']) {
-            $request->markAuthorized();
+            $request->markPending();
 
             return;
         }
@@ -32,6 +34,7 @@ final class StatusAction implements ActionInterface
 
     public function supports($request): bool
     {
+        /** @var Generic $request */
         return
             $request instanceof GetStatusInterface &&
             $request->getFirstModel() instanceof SyliusPaymentInterface

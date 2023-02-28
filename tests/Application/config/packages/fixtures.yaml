@@ -9,7 +9,7 @@ sylius_fixtures:
                                 code: 'qpay'
                                 name: 'QPay Payment'
                                 gatewayName: 'QPay Payment'
-                                gatewayFactory: 'qpay_payment'
+                                gatewayFactory: 'qpay'
                                 gatewayConfig:
                                     username: 'TEST_MERCHANT'
                                     password: '123456'

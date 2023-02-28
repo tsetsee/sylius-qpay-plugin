@@ -8,18 +8,18 @@ parameters:
 services:
     Tsetsee\SyliusQpayPlugin\Form\Type\QpayGatewayConfigurationType:
         tags:
-          - { name: sylius.gateway_configuration_type, type: qpay_payment, label: 'QPay Payment' }
+          - { name: sylius.gateway_configuration_type, type: qpay, label: 'QPay Payment' }
           - { name: form.type }
 
     qpay.sylius_payment:
         class: Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder
         arguments: [ Tsetsee\SyliusQpayPlugin\Payum\QpayPaymentGatewayFactory ]
         tags:
-          - { name: payum.gateway_factory_builder, factory: qpay_payment }
+          - { name: payum.gateway_factory_builder, factory: qpay }
 
     Tsetsee\SyliusQpayPlugin\Payum\Action\CaptureAction:
         public: true
         arguments:
             - '@logger'
         tags:
-            - {name: payum.action, factory: qpay_payment, alias: payum.action.capture}
+            - {name: payum.action, factory: qpay, alias: payum.action.capture}
