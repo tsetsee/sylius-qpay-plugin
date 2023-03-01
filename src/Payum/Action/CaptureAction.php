@@ -16,6 +16,7 @@ use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
 use Tsetsee\Qpay\Api\DTO\CreateInvoiceRequest;
 use Tsetsee\Qpay\Api\Exception\BadResponseException;
 use Tsetsee\Qpay\Api\QPayApi;
+use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\SyliusApi;
 
 final class CaptureAction implements ActionInterface, ApiAwareInterface
@@ -37,7 +38,7 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
         $order = $payment->getOrder();
 
         $details = [
-            'status' => 0,
+            'status' => QPayPayment::STATE_NEW,
         ];
 
         try {
@@ -49,7 +50,7 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
             );
 
             if ($payment->getAmount() === null) {
-                $details['status'] = 3;
+                $details['status'] = QPayPayment::STATE_CANCEL;
             } else {
                 $invoice = $client->createInvoice(CreateInvoiceRequest::from([
                     'invoiceCode' => $this->api->getInvoiceCode(),
@@ -61,13 +62,14 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
                     'callbackUrl' => '',
                 ]));
 
+                $details['status'] = QPayPayment::STATE_PROCESSED;
                 $details['invoice'] = $invoice->toArray();
             }
         } catch (RequestException $exception) {
             $response = $exception->getResponse();
             $details['status'] = $response?->getStatusCode();
         } catch(BadResponseException $e) {
-            $details['status'] = 1;
+            $details['status'] = QPayPayment::STATE_CANCEL;
             $details['error'] = $e->getMessage();
         } finally {
             $payment->setDetails($details);

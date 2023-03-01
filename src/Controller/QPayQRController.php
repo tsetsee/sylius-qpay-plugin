@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tsetsee\SyliusQpayPlugin\Controller;
 
 use Payum\Core\Model\PaymentInterface as ModelPaymentInterface;
+use Payum\Core\Payum;
+use Payum\Core\Security\HttpRequestVerifierInterface;
 use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentInterface;
 use Sylius\Component\Core\Repository\OrderRepositoryInterface;
@@ -17,6 +19,7 @@ final class QPayQRController extends AbstractController
 {
     public function __construct(
         private OrderRepositoryInterface $orderRepository,
+        private Payum $payum,
     ) {
     }
 
@@ -37,5 +40,18 @@ final class QPayQRController extends AbstractController
         return $this->render('@TsetseeSyliusQpayPlugin/qr.html.twig', [
             'invoice' => $invoice,
         ]);
+    }
+
+    public function callbackAction(Request $request): Response
+    {
+        $token = $this->getHttpRequestVerifier()->verify($request);
+        $this->payum->getGateway($token->getGatewayName());
+
+        return new Response('SUCCESS');
+    }
+
+    private function getHttpRequestVerifier(): HttpRequestVerifierInterface
+    {
+        return $this->payum->getHttpRequestVerifier();
     }
 }

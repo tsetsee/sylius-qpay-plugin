@@ -11,7 +11,9 @@
 
         {% include '@SyliusShop/Order/_summary.html.twig' %}
 
+
         {% if order.paymentState in ['awaiting_payment'] %}
+        {{ render(controller('Tsetsee\\SyliusQpayPlugin\\Controller\\QPayQRController::renderQRAction', {id: order.id })) }}
             {{ form_start(form, {'action': path('sylius_shop_order_show', {'tokenValue': order.tokenValue}), 'attr': {'class': 'ui loadable form', 'novalidate': 'novalidate'}}) }}
             <input type="hidden" name="_method" value="PUT" />
 

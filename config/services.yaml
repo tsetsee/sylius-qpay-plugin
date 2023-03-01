@@ -6,6 +6,12 @@
 parameters:
 
 services:
+    Tsetsee\SyliusQpayPlugin\Controller\QPayQRController:
+        public: true
+        autowire: true
+        tags:
+            - {name: 'container.service_subscriber'}
+
     Tsetsee\SyliusQpayPlugin\Form\Type\QpayGatewayConfigurationType:
         tags:
           - { name: sylius.gateway_configuration_type, type: qpay, label: 'QPay Payment' }
