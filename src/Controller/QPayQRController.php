@@ -45,7 +45,9 @@ final class QPayQRController extends AbstractController
     public function callbackAction(Request $request): Response
     {
         $token = $this->getHttpRequestVerifier()->verify($request);
-        $this->payum->getGateway($token->getGatewayName());
+        $gateway = $this->payum->getGateway($token->getGatewayName());
+
+        // $gateway->execute()
 
         return new Response('SUCCESS');
     }
