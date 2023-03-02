@@ -10,22 +10,23 @@ services:
         public: true
         autowire: true
         tags:
-            - {name: 'container.service_subscriber'}
+            - {name: 'controller.service_arguments'}
 
     Tsetsee\SyliusQpayPlugin\Form\Type\QpayGatewayConfigurationType:
         tags:
-          - { name: sylius.gateway_configuration_type, type: qpay, label: 'QPay Payment' }
-          - { name: form.type }
+            - {name: sylius.gateway_configuration_type, type: qpay, label: 'QPay Payment'}
+            - {name: form.type}
 
     qpay.sylius_payment:
         class: Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder
-        arguments: [ Tsetsee\SyliusQpayPlugin\Payum\QpayPaymentGatewayFactory ]
+        arguments: [Tsetsee\SyliusQpayPlugin\Payum\QpayPaymentGatewayFactory]
         tags:
-          - { name: payum.gateway_factory_builder, factory: qpay }
+            - {name: payum.gateway_factory_builder, factory: qpay}
 
     Tsetsee\SyliusQpayPlugin\Payum\Action\CaptureAction:
         public: true
         arguments:
             - '@logger'
+            - '@router'
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.capture}

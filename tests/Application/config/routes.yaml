@@ -1,9 +1,6 @@
-acme_sylius_example_shop:
+tsetsee_qpay_plugin_shop:
     resource: "@TsetseeSyliusQpayPlugin/config/shop_routing.yml"
-    prefix: /{_locale}
-    requirements:
-        _locale: ^[a-z]{2}(?:_[A-Z]{2})?$
 
-acme_sylius_example_admin:
+tsetsee_qpay_plugin_admin:
     resource: "@TsetseeSyliusQpayPlugin/config/admin_routing.yml"
     prefix: /admin
