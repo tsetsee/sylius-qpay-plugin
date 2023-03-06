@@ -20,7 +20,7 @@ final class QpayPaymentGatewayFactory extends GatewayFactory
         ]);
 
         $config['payum.api'] = function (ArrayObject $config) {
-            return new SyliusApi(
+            return new QPayApi(
                 username: (string) ($config['username']),
                 password: (string) $config['password'],
                 env: Env::from($config['env']),

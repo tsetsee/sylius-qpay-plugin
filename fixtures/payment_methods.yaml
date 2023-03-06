@@ -15,6 +15,7 @@ sylius_fixtures:
                                     password: '123456'
                                     env: sandbox
                                     invoiceCode: 'TEST_INVOICE'
+                                    use_authorize: true
                                 channels:
                                     - 'FASHION_WEB'
                                 enabled: true

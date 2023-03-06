@@ -9,6 +9,7 @@ use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Request\Generic;
 use Payum\Core\Request\GetStatusInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
+use Sylius\Component\Payment\Model\PaymentInterface;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 
 final class StatusAction implements ActionInterface
@@ -24,6 +25,12 @@ final class StatusAction implements ActionInterface
         $details = $payment->getDetails();
 
         /** @var GetStatusInterface $request */
+        if ($payment->getState() === PaymentInterface::STATE_NEW) {
+            $request->markNew();
+
+            return;
+        }
+
         if (QPayPayment::STATE_PROCESSED->value === $details['status']) {
             $request->markPending();
 

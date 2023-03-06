@@ -30,3 +30,13 @@ services:
             - '@router'
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.capture}
+
+    Tsetsee\SyliusQpayPlugin\Payum\Action\ConvertPaymentAction:
+        public: true
+        tags:
+            - {name: payum.action, factory: qpay, alias: payum.action.convert_payment}
+
+    Tsetsee\SyliusQpayPlugin\Payum\Action\AuthorizeAction:
+        public: true
+        tags:
+            - {name: payum.action, factory: qpay, alias: payum.action.authorize}
