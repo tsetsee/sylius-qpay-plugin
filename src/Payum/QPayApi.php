@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tsetsee\SyliusQpayPlugin\Payum;
 
-use Payum\Core\Model\PaymentInterface;
+use Sylius\Component\Core\Model\PaymentInterface;
 use Tsetsee\Qpay\Api\DTO\CreateInvoiceRequest;
 use Tsetsee\Qpay\Api\DTO\CreateInvoiceResponse;
 use Tsetsee\Qpay\Api\DTO\GetInvoiceResponse;
@@ -37,13 +37,15 @@ final class QPayApi
         PaymentInterface $payment,
         string $callbackURL,
     ): CreateInvoiceResponse {
+        $order = $payment->getOrder();
+
         return $this->client->createInvoice(CreateInvoiceRequest::from([
             'invoiceCode' => $this->invoiceCode,
-            'senderInvoiceNo' => (string) $payment->getNumber(),
-            'invoiceReceiverCode' => (string) $payment->getClientId(),
-            'invoiceDescription' => $payment->getDescription(),
+            'senderInvoiceNo' => $order->getNumber(),
+            'invoiceReceiverCode' => (string) $order->getCustomer()->getId(),
+            'invoiceDescription' => 'invoice no:' . $order->getNumber(),
             'senderBranchCode' => 'CENTRAL',
-            'amount' => $payment->getTotalAmount() / 100.0,
+            'amount' => $payment->getAmount() / 100.0,
             // 'callbackUrl' => $this->urlGenerator->generate('payum_capture_do', [
             //     'payum_token' => $request->getToken()->getHash(),
             // ]),

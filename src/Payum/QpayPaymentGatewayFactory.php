@@ -16,7 +16,7 @@ final class QpayPaymentGatewayFactory extends GatewayFactory
         $config->defaults([
             'payum.factory_name' => 'qpay',
             'payum.factory_title' => 'Qpay Payment',
-            'payum.action.status' => new StatusAction(),
+            // 'payum.action.status' => new StatusAction(),
         ]);
 
         $config['payum.api'] = function (ArrayObject $config) {
