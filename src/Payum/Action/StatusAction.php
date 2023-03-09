@@ -10,10 +10,15 @@ use Payum\Core\Reply\HttpRedirect;
 use Payum\Core\Request\Generic;
 use Payum\Core\Request\GetStatusInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 
 final class StatusAction implements ActionInterface
 {
+    public function __construct(private RouterInterface $router)
+    {
+    }
+
     public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);
@@ -24,13 +29,13 @@ final class StatusAction implements ActionInterface
 
         $details = $payment->getDetails();
 
-        // dd($details);
-
         /** @var GetStatusInterface $request */
         if (QPayPayment::STATE_PROCESSED->value === $details['status']) {
             $request->markPending();
 
-            throw new HttpRedirect('/asdf');
+            throw new HttpRedirect($this->router->generate('tsetsee_qpay_plugin_payment_show', [
+                'tokenValue' => $payment->getOrder()->getTokenValue(),
+            ]));
         }
 
         $request->markFailed();

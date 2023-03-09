@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
 use Sylius\Component\Payment\Model\PaymentInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Tsetsee\Qpay\Api\Exception\BadResponseException;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
@@ -25,6 +26,7 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
 
     public function __construct(
         private LoggerInterface $logger,
+        private RouterInterface $router,
     ) {
         $this->apiClass = QPayApi::class;
     }
@@ -48,7 +50,13 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
                 if ($payment->getAmount() === null) {
                     $details['status'] = QPayPayment::STATE_CANCEL;
                 } else {
-                    $invoice = $this->api->createInvoice($payment, $request->getToken()->getTargetUrl());
+                    $token = $request->getToken();
+                    $invoice = $this->api->createInvoice(
+                        $payment,
+                        $this->router->generate('payum_notify_do', [
+                            'payum_token' => $token->getHash(),
+                        ], RouterInterface::ABSOLUTE_URL),
+                    );
 
                     $details['status'] = QPayPayment::STATE_PROCESSED;
                     $details['invoice'] = $invoice->toArray();

@@ -27,13 +27,26 @@ services:
         public: true
         arguments:
             - '@logger'
+            - '@router'
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.capture}
 
     Tsetsee\SyliusQpayPlugin\Payum\Action\StatusAction:
         public: true
+        arguments:
+            - '@router'
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.status}
+
+    Tsetsee\SyliusQpayPlugin\Payum\Action\NotifyAction:
+        public: true
+        tags:
+            - {name: payum.action, factory: qpay, alias: payum.action.notify}
+
+    Tsetsee\SyliusQpayPlugin\Payum\Action\CheckPaymentAction:
+        public: true
+        tags:
+            - {name: payum.action, factory: qpay, alias: payum.action.check_payment}
 
     # Tsetsee\SyliusQpayPlugin\Payum\Action\ConvertPaymentAction:
     #     public: true

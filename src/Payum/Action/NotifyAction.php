@@ -5,22 +5,16 @@ declare(strict_types=1);
 namespace Tsetsee\SyliusQpayPlugin\Payum\Action;
 
 use Payum\Core\Action\ActionInterface;
-use Payum\Core\ApiAwareInterface;
-use Payum\Core\ApiAwareTrait;
+use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\GatewayAwareInterface;
 use Payum\Core\GatewayAwareTrait;
+use Payum\Core\Reply\HttpResponse;
 use Payum\Core\Request\Notify;
-use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
+use Tsetsee\SyliusQpayPlugin\Payum\Request\CheckPayment;
 
-class NotifyAction implements ActionInterface, ApiAwareInterface, GatewayAwareInterface
+final class NotifyAction implements ActionInterface, GatewayAwareInterface
 {
     use GatewayAwareTrait;
-    use ApiAwareTrait;
-
-    public function __construct()
-    {
-        $this->apiClass = QPayApi::class;
-    }
 
     /**
      * @inheritDoc
@@ -29,6 +23,11 @@ class NotifyAction implements ActionInterface, ApiAwareInterface, GatewayAwareIn
      */
     public function execute($request)
     {
+        RequestNotSupportedException::assertSupports($this, $request);
+
+        $this->gateway->execute(new CheckPayment($request->getFirstModel()));
+
+        throw new HttpResponse('SUCCESS', 200);
     }
 
     /**
