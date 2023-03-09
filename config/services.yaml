@@ -27,7 +27,6 @@ services:
         public: true
         arguments:
             - '@logger'
-            - '@router'
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.capture}
 

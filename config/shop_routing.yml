@@ -3,3 +3,14 @@ tsetsee_qpay_plugin_callback:
     path: /payment/capture/qpay/{payum_token}
     defaults:
         _controller: Tsetsee\SyliusQpayPlugin\Controller\QPayQRController::callbackAction
+
+tsetsee_qpay_plugin_payment_show:
+    path: /{_locale}/payment/qpay/show/{tokenValue}
+    defaults:
+        _controller: sylius.controller.order::showAction
+        _sylius:
+            template: '@TsetseeSyliusQpayPlugin/show.html.twig'
+            repository:
+                method: findOneBy
+                arguments:
+                     - {tokenValue: $tokenValue}

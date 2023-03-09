@@ -1,0 +1,3 @@
+sylius:
+    ui:
+        qpay_payment: QPay төлбөрийн хуудас
