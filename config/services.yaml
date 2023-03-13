@@ -21,7 +21,7 @@ services:
         class: Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder
         arguments: [Tsetsee\SyliusQpayPlugin\Payum\QpayPaymentGatewayFactory]
         tags:
-            - {name: payum.gateway_factory_builder, factory: qpay}
+            - {name: payum.gateway_factory_builder, factory: qpay, logger: '@logger'}
 
     Tsetsee\SyliusQpayPlugin\Payum\Action\CaptureAction:
         public: true

@@ -11,7 +11,6 @@ use Sylius\Component\Core\Model\PaymentInterface;
 use Sylius\Component\Core\Repository\OrderRepositoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Tsetsee\Qpay\Api\DTO\CreateInvoiceResponse;
 
 final class QPayQRController extends PayumController
 {
@@ -25,14 +24,12 @@ final class QPayQRController extends PayumController
         $order = $orderRepository->find($orderId);
 
         /** @var ModelPaymentInterface $payment */
-        $payment = $order->getLastPayment(PaymentInterface::STATE_NEW);
+        $payment = $order->getLastPayment(PaymentInterface::STATE_PROCESSING);
 
         $details = $payment->getDetails();
 
-        $invoice = CreateInvoiceResponse::from($details['invoice']);
-
         return $this->render('@TsetseeSyliusQpayPlugin/qr.html.twig', [
-            'invoice' => $invoice,
+            'invoice' => $details['invoice'] ?? null,
         ]);
     }
 

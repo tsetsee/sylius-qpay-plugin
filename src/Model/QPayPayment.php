@@ -10,5 +10,5 @@ enum QPayPayment: int
     case STATE_PROCESSED = 1;
     case STATE_REFUND = 2;
     case STATE_CANCEL = 3;
-    case STATE_CAPTURE = 4;
+    case STATE_PAID = 4;
 }

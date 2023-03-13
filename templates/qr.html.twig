@@ -1,1 +1,5 @@
-<img src="data:image/png;base64, {{ invoice.qrImage }}">
+{% if invoice is defined %}
+  <img src="data:image/png;base64, {{ invoice.qr_image }}">
+  {% else %}
+  QR not found
+{% endif %}

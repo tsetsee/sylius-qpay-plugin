@@ -24,6 +24,8 @@ final class StatusAction implements ActionInterface
         RequestNotSupportedException::assertSupports($this, $request);
 
         /** @var Generic $request */
+        $token = $request->getToken();
+
         /** @var SyliusPaymentInterface $payment */
         $payment = $request->getFirstModel();
 
@@ -36,6 +38,8 @@ final class StatusAction implements ActionInterface
             throw new HttpRedirect($this->router->generate('tsetsee_qpay_plugin_payment_show', [
                 'tokenValue' => $payment->getOrder()->getTokenValue(),
             ]));
+
+            return;
         }
 
         $request->markFailed();

@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Tsetsee\SyliusQpayPlugin\Payum;
 
 use Sylius\Component\Core\Model\PaymentInterface;
+use Tsetsee\Qpay\Api\DTO\CheckPaymentRequest;
+use Tsetsee\Qpay\Api\DTO\CheckPaymentResponse;
 use Tsetsee\Qpay\Api\DTO\CreateInvoiceRequest;
 use Tsetsee\Qpay\Api\DTO\CreateInvoiceResponse;
 use Tsetsee\Qpay\Api\DTO\GetInvoiceResponse;
 use Tsetsee\Qpay\Api\Enum\Env;
+use Tsetsee\Qpay\Api\Enum\ObjectType;
 use Tsetsee\Qpay\Api\QPayApi as ApiQPayApi;
 
 final class QPayApi
@@ -56,5 +59,17 @@ final class QPayApi
     public function getInvoice(string $invoiceId): GetInvoiceResponse
     {
         return $this->client->getInvoice($invoiceId);
+    }
+
+    public function checkPayment(
+        ObjectType $objectType,
+        string $objectId,
+        int $offset = 0,
+    ): CheckPaymentResponse {
+        return $this->client->checkPayment(CheckPaymentRequest::from([
+            'objectType' => $objectType,
+            'objectId' => $objectId,
+            'offset' => $offset,
+        ]));
     }
 }

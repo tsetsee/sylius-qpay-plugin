@@ -51,15 +51,19 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
                     $details['status'] = QPayPayment::STATE_CANCEL;
                 } else {
                     $token = $request->getToken();
+
+                    $targetURL = $this->router->generate('payum_notify_do', [
+                            'payum_token' => $token->getHash(),
+                        ], RouterInterface::ABSOLUTE_URL);
+
                     $invoice = $this->api->createInvoice(
                         $payment,
-                        $this->router->generate('payum_notify_do', [
-                            'payum_token' => $token->getHash(),
-                        ], RouterInterface::ABSOLUTE_URL),
+                        $targetURL,
                     );
 
                     $details['status'] = QPayPayment::STATE_PROCESSED;
                     $details['invoice'] = $invoice->toArray();
+                    $details['notify_url'] = $targetURL;
                 }
             }
         } catch (RequestException $exception) {
