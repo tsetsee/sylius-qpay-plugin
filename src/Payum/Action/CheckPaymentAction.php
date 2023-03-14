@@ -9,7 +9,6 @@ use Payum\Core\ApiAwareInterface;
 use Payum\Core\ApiAwareTrait;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Tsetsee\Qpay\Api\Enum\ObjectType;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
 use Tsetsee\SyliusQpayPlugin\Payum\Request\CheckPayment;
@@ -34,12 +33,11 @@ class CheckPaymentAction implements ActionInterface, ApiAwareInterface
 
         $details = ArrayObject::ensureArrayObject($request->getModel());
 
-        dd($details);
-
         /** @var QPayApi $api */
         $api = $this->api;
 
-        $payment = $api->checkPayment(ObjectType::INVOICE, $details['invoice']['invoiceId']);
+        $qpayInvoice = $api->getInvoice($details['invoice']['invoice_id']);
+        dd($qpayInvoice);
 
         // if ($invoice->invoiceStatus === Invoice) {
         //     $details->replace([

@@ -10,6 +10,7 @@ use Tsetsee\Qpay\Api\DTO\CheckPaymentResponse;
 use Tsetsee\Qpay\Api\DTO\CreateInvoiceRequest;
 use Tsetsee\Qpay\Api\DTO\CreateInvoiceResponse;
 use Tsetsee\Qpay\Api\DTO\GetInvoiceResponse;
+use Tsetsee\Qpay\Api\DTO\Offset;
 use Tsetsee\Qpay\Api\Enum\Env;
 use Tsetsee\Qpay\Api\Enum\ObjectType;
 use Tsetsee\Qpay\Api\QPayApi as ApiQPayApi;
@@ -64,12 +65,15 @@ final class QPayApi
     public function checkPayment(
         ObjectType $objectType,
         string $objectId,
-        int $offset = 0,
+        ?Offset $offset = null,
     ): CheckPaymentResponse {
         return $this->client->checkPayment(CheckPaymentRequest::from([
-            'objectType' => $objectType,
+            'objectType' => $objectType->value,
             'objectId' => $objectId,
-            'offset' => $offset,
+            'offset' => $offset ?? Offset::from([
+                'pageNumber' => 1,
+                'pageLimit' => 100,
+            ]),
         ]));
     }
 }

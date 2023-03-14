@@ -21,6 +21,4 @@ sylius_shop_order_pay:
     defaults:
         _sylius:
             redirect:
-                route: tsetsee_qpay_plugin_payment_show
-                parameters:
-                    tokenValue: $tokenValue
+                route: payum_notify_do

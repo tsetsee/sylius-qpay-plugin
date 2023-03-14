@@ -33,11 +33,11 @@ final class StatusAction implements ActionInterface
 
         /** @var GetStatusInterface $request */
         if (QPayPayment::STATE_PROCESSED->value === $details['status']) {
-            $request->markPending();
+            $request->markNew();
 
-            throw new HttpRedirect($this->router->generate('tsetsee_qpay_plugin_payment_show', [
-                'tokenValue' => $payment->getOrder()->getTokenValue(),
-            ]));
+            // throw new HttpRedirect($this->router->generate('tsetsee_qpay_plugin_payment_show', [
+            //     'tokenValue' => $payment->getOrder()->getTokenValue(),
+            // ]));
 
             return;
         }
