@@ -6,11 +6,21 @@ tsetsee_qpay_plugin_callback:
 
 tsetsee_qpay_plugin_payment_show:
     path: /{_locale}/payment/qpay/show/{tokenValue}
+    controller: sylius.controller.order::showAction
     defaults:
-        _controller: sylius.controller.order::showAction
         _sylius:
             template: '@TsetseeSyliusQpayPlugin/show.html.twig'
             repository:
                 method: findOneBy
                 arguments:
                      - {tokenValue: $tokenValue}
+
+sylius_shop_order_pay:
+    path: /{_locale}/order/{tokenValue}/pay
+    controller: sylius.controller.payum::prepareCaptureAction
+    defaults:
+        _sylius:
+            redirect:
+                route: tsetsee_qpay_plugin_payment_show
+                parameters:
+                    tokenValue: $tokenValue
