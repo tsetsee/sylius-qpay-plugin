@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tsetsee\SyliusQpayPlugin\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -23,6 +24,9 @@ final class QpayGatewayConfigurationType extends AbstractType
                 ],
             ])
             ->add('invoiceCode', TextType::class)
+            ->add('use_authorize', CheckboxType::class, [
+                'required' => true,
+            ])
         ;
     }
 }
