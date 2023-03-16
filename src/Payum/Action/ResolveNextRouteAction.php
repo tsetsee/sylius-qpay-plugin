@@ -26,19 +26,26 @@ final class ResolveNextRouteAction implements ActionInterface
         /** @var SyliusPaymentInterface $payment */
         $payment = $request->getFirstModel();
 
-        if ($payment->getState() === SyliusPaymentInterface::STATE_NEW) {
-            $request->setRouteName('tsetsee_qpay_plugin_payment_show');
+        if ($payment->getState() === SyliusPaymentInterface::STATE_COMPLETED) {
+            $request->setRouteName('sylius_shop_order_show');
             $request->setRouteParameters([
                 'tokenValue' => $payment->getOrder()->getTokenValue(),
             ]);
+
+            return;
         }
+
+        $request->setRouteName('tsetsee_qpay_plugin_payment_show');
+        $request->setRouteParameters([
+            'tokenValue' => $payment->getOrder()->getTokenValue(),
+        ]);
     }
 
     public function supports($request): bool
     {
         return
             $request instanceof ResolveNextRoute &&
-            $request->getModel() instanceof SyliusPaymentInterface
+            $request->getFirstModel() instanceof SyliusPaymentInterface
         ;
     }
 }

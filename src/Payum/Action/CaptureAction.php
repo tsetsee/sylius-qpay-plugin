@@ -17,6 +17,7 @@ use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
+use Tsetsee\SyliusQpayPlugin\Payum\Request\CheckPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\Request\CreateInvoice;
 
 final class CaptureAction implements ActionInterface, ApiAwareInterface, GatewayAwareInterface
@@ -43,7 +44,8 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface, Gateway
 
         if (!isset($details['status'])) {
             $this->gateway->execute(new CreateInvoice($request->getToken()));
-        } elseif ($details['status'] === QPayPayment::STATE_PROCESSING) {
+        } elseif ($details['status'] === QPayPayment::STATE_PROCESSING->value) {
+            $this->gateway->execute(new CheckPayment($request->getToken()));
         }
     }
 

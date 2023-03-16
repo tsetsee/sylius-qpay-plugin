@@ -23,14 +23,6 @@ services:
         tags:
             - {name: payum.gateway_factory_builder, factory: qpay}
 
-    Tsetsee\SyliusQpayPlugin\Payum\Action\AuthorizeAction:
-        public: true
-        arguments:
-            - '@logger'
-            - '@router'
-        tags:
-            - {name: payum.action, factory: qpay, alias: payum.action.authorize}
-
     Tsetsee\SyliusQpayPlugin\Payum\Action\CaptureAction:
         public: true
         arguments:
@@ -53,13 +45,12 @@ services:
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.resolve_next_route}
 
-    Tsetsee\SyliusQpayPlugin\Payum\Action\NotifyAction:
-        public: true
-        tags:
-            - {name: payum.action, factory: qpay, alias: payum.action.notify}
 
-    Tsetsee\SyliusQpayPlugin\Payum\Action\CheckPaymentAction:
+    Tsetsee\SyliusQpayPlugin\Payum\Action\API\CheckPaymentAction:
         public: true
+        arguments:
+            - '@logger'
+            - '@router'
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.check_payment}
 
@@ -70,13 +61,3 @@ services:
             - '@router'
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.create_invoice}
-
-    # Tsetsee\SyliusQpayPlugin\Payum\Action\ConvertPaymentAction:
-    #     public: true
-    #     tags:
-    #         - {name: payum.action, factory: qpay, alias: payum.action.convert_payment}
-
-    # Tsetsee\SyliusQpayPlugin\Payum\Action\AuthorizePaymentAction:
-    #     public: true
-    #     tags:
-    #         - {name: payum.action, factory: qpay, alias: payum.action.authorize}

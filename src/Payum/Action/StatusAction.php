@@ -31,7 +31,6 @@ final class StatusAction implements ActionInterface
 
         $details = $payment->getDetails();
 
-        dd($request);
         /** @var GetStatusInterface $request */
         // if ($payment->getState() === PaymentInterface::STATE_NEW) {
         //     $request->markPending();
@@ -40,7 +39,19 @@ final class StatusAction implements ActionInterface
         // }
 
         if (QPayPayment::STATE_NEW->value === $details['status']) {
+            $request->markNew();
+
+            return;
+        }
+
+        if (QPayPayment::STATE_PROCESSING->value === $details['status']) {
             $request->markPending();
+
+            return;
+        }
+
+        if (QPayPayment::STATE_PAID->value === $details['status']) {
+            $request->markCaptured();
 
             return;
         }

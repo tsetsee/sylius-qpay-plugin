@@ -6,10 +6,12 @@ namespace Tsetsee\SyliusQpayPlugin\Payum\Action\API;
 
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
-use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Exception\UnsupportedApiException;
+use Payum\Core\Reply\HttpRedirect;
 use Psr\Log\LoggerInterface;
+use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
 use Tsetsee\SyliusQpayPlugin\Payum\Request\CheckPayment;
@@ -20,6 +22,7 @@ class CheckPaymentAction implements ActionInterface, ApiAwareInterface
 
     public function __construct(
         private LoggerInterface $logger,
+        private RouterInterface $router,
     ) {
     }
 
@@ -32,17 +35,28 @@ class CheckPaymentAction implements ActionInterface, ApiAwareInterface
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
-        $details = ArrayObject::ensureArrayObject($request->getModel());
+        /** @var SyliusPaymentInterface $payment */
+        $payment = $request->getFirstModel();
+
+        $details = $payment->getDetails();
 
         $qpayInvoice = $this->api->getInvoice($details['invoice']['invoice_id']);
-        dd($qpayInvoice);
 
-        // if ($invoice->invoiceStatus === Invoice) {
-        //     $details->replace([
-        //         'status' => QPayPayment::STATE_PAID,
-        //         'invoice' => $invoice->toArray(),
-        //     ]);
-        // }
+        if (true || $qpayInvoice->invoiceStatus === 'PAID') {
+            $details['status'] = QPayPayment::STATE_PAID;
+            $details['invoice_status'] = $qpayInvoice->toArray();
+
+            $payment->setDetails($details);
+
+            return;
+        }
+
+        /** @var SyliusPaymentInterface $payment */
+        $payment = $request->getFirstModel();
+
+        throw new HttpRedirect($this->router->generate('tsetsee_qpay_plugin_payment_show', [
+            'tokenValue' => $payment->getOrder()->getTokenValue(),
+        ]));
     }
 
     /**
@@ -52,7 +66,7 @@ class CheckPaymentAction implements ActionInterface, ApiAwareInterface
     {
         return
             $request instanceof CheckPayment &&
-            $request->getModel() instanceof \ArrayAccess
+            $request->getFirstModel() instanceof SyliusPaymentInterface
         ;
     }
 

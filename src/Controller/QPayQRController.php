@@ -29,7 +29,7 @@ final class QPayQRController extends PayumController
         $details = $payment->getDetails();
 
         return $this->render('@TsetseeSyliusQpayPlugin/qr.html.twig', [
-            'invoice' => $details['invoice'] ?? null,
+            'invoice' => $details['invoice'],
         ]);
     }
 
