@@ -21,7 +21,7 @@ tsetsee_qpay_plugin_payment_show:
 #     defaults:
 #         _sylius:
 #             redirect:
-                # route: payum_notify_do
-                # route: tsetsee_qpay_plugin_payment_show
-                # parameters:
-                #     tokenValue: $tokenValue
+#                 # route: payum_notify_do
+#                 route: tsetsee_qpay_plugin_payment_show
+#                 parameters:
+#                     tokenValue: $tokenValue

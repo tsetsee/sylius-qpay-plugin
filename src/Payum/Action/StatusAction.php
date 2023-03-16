@@ -6,10 +6,10 @@ namespace Tsetsee\SyliusQpayPlugin\Payum\Action;
 
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Core\Reply\HttpRedirect;
 use Payum\Core\Request\Generic;
 use Payum\Core\Request\GetStatusInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
+use Sylius\Component\Payment\Model\PaymentInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 
@@ -31,13 +31,16 @@ final class StatusAction implements ActionInterface
 
         $details = $payment->getDetails();
 
+        dd($request);
         /** @var GetStatusInterface $request */
-        if (QPayPayment::STATE_PROCESSED->value === $details['status']) {
-            $request->markPending();
+        // if ($payment->getState() === PaymentInterface::STATE_NEW) {
+        //     $request->markPending();
+        //
+        //     return;
+        // }
 
-            throw new HttpRedirect($this->router->generate('tsetsee_qpay_plugin_payment_show', [
-                'tokenValue' => $payment->getOrder()->getTokenValue(),
-            ]));
+        if (QPayPayment::STATE_NEW->value === $details['status']) {
+            $request->markPending();
 
             return;
         }

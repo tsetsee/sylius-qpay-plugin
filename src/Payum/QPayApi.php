@@ -20,11 +20,26 @@ final class QPayApi
     private ApiQPayApi $client;
 
     public function __construct(
-        public string $username,
-        public string $password,
-        public Env $env,
-        public string $invoiceCode,
+        private string $username,
+        private string $password,
+        private Env $env,
+        private string $invoiceCode,
     ) {
+    }
+
+    /**
+     * @param array $options - [
+     *      ?Psr\Log\LoggerInterface $logger
+     * ]
+     */
+    public function setup(array $options): void
+    {
+        $this->client = new ApiQPayApi(
+            username: $this->username,
+            password: $this->password,
+            env: $this->env,
+            options: $options,
+        );
     }
 
     public function createInvoice(

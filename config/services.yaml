@@ -46,6 +46,13 @@ services:
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.status}
 
+    Tsetsee\SyliusQpayPlugin\Payum\Action\ResolveNextRouteAction:
+        public: true
+        arguments:
+            - '@router'
+        tags:
+            - {name: payum.action, factory: qpay, alias: payum.action.resolve_next_route}
+
     Tsetsee\SyliusQpayPlugin\Payum\Action\NotifyAction:
         public: true
         tags:
@@ -55,6 +62,14 @@ services:
         public: true
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.check_payment}
+
+    Tsetsee\SyliusQpayPlugin\Payum\Action\API\CreateInvoiceAction:
+        public: true
+        arguments:
+            - '@logger'
+            - '@router'
+        tags:
+            - {name: payum.action, factory: qpay, alias: payum.action.create_invoice}
 
     # Tsetsee\SyliusQpayPlugin\Payum\Action\ConvertPaymentAction:
     #     public: true

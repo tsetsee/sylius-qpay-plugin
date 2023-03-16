@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace Tsetsee\SyliusQpayPlugin\Payum\Action;
 
-use GuzzleHttp\Exception\RequestException;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
-use Payum\Core\ApiAwareTrait;
 use Payum\Core\Exception\RequestNotSupportedException;
+use Payum\Core\Exception\UnsupportedApiException;
+use Payum\Core\GatewayAwareInterface;
+use Payum\Core\GatewayAwareTrait;
 use Payum\Core\Request\Capture;
 use Payum\Core\Request\Generic;
 use Psr\Log\LoggerInterface;
-use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
-use Sylius\Component\Payment\Model\PaymentInterface;
-use Symfony\Component\Routing\RouterInterface;
-use Tsetsee\Qpay\Api\Exception\BadResponseException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
+use Tsetsee\SyliusQpayPlugin\Payum\Request\CreateInvoice;
 
-final class CaptureAction implements ActionInterface, ApiAwareInterface
+final class CaptureAction implements ActionInterface, ApiAwareInterface, GatewayAwareInterface
 {
-    use ApiAwareTrait;
+    use GatewayAwareTrait;
+
+    private QPayApi $api;
 
     public function __construct(
         private LoggerInterface $logger,
-        private RouterInterface $router,
+        private UrlGeneratorInterface $router,
     ) {
-        $this->apiClass = QPayApi::class;
     }
 
     public function execute($request): void
@@ -38,42 +38,12 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
         /** @var Generic $request */
         /** @var SyliusPaymentInterface $payment */
         $payment = $request->getModel();
-        /** @var OrderInterface $order */
-        $order = $payment->getOrder();
 
-        $details = [
-            'status' => QPayPayment::STATE_NEW,
-        ];
+        $details = $payment->getDetails();
 
-        try {
-            if ($payment->getState() === PaymentInterface::STATE_NEW) {
-                if ($payment->getAmount() === null) {
-                    $details['status'] = QPayPayment::STATE_CANCEL;
-                } else {
-                    $token = $request->getToken();
-
-                    $targetURL = $this->router->generate('payum_notify_do', [
-                            'payum_token' => $token->getHash(),
-                        ], RouterInterface::ABSOLUTE_URL);
-
-                    $invoice = $this->api->createInvoice(
-                        $payment,
-                        $targetURL,
-                    );
-
-                    $details['status'] = QPayPayment::STATE_PROCESSED;
-                    $details['invoice'] = $invoice->toArray();
-                    $details['notify_url'] = $targetURL;
-                }
-            }
-        } catch (RequestException $exception) {
-            $response = $exception->getResponse();
-            $details['status'] = $response?->getStatusCode();
-        } catch(BadResponseException $e) {
-            $details['status'] = QPayPayment::STATE_CANCEL;
-            $details['error'] = $e->getMessage();
-        } finally {
-            $payment->setDetails($details);
+        if (!isset($details['status'])) {
+            $this->gateway->execute(new CreateInvoice($request->getToken()));
+        } elseif ($details['status'] === QPayPayment::STATE_PROCESSING) {
         }
     }
 
@@ -83,5 +53,21 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface
             $request instanceof Capture &&
             $request->getModel() instanceof SyliusPaymentInterface
         ;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setApi($api)
+    {
+        if (!$api instanceof QPayApi) {
+            throw new UnsupportedApiException(sprintf('Not supported api given. It must be an instance of %s', QPayApi::class));
+        }
+
+        $api->setup([
+            'logger' => $this->logger,
+        ]);
+
+        $this->api = $api;
     }
 }

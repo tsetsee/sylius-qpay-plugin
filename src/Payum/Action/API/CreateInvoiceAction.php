@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tsetsee\SyliusQpayPlugin\Payum\Action;
+namespace Tsetsee\SyliusQpayPlugin\Payum\Action\API;
 
 use GuzzleHttp\Exception\RequestException;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Exception\UnsupportedApiException;
-use Payum\Core\Request\Authorize;
-use Payum\Core\Request\Generic;
+use Payum\Core\Reply\HttpRedirect;
 use Psr\Log\LoggerInterface;
 use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
@@ -19,8 +18,9 @@ use Symfony\Component\Routing\RouterInterface;
 use Tsetsee\Qpay\Api\Exception\BadResponseException;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
+use Tsetsee\SyliusQpayPlugin\Payum\Request\CreateInvoice;
 
-final class AuthorizeAction implements ActionInterface, ApiAwareInterface
+final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
 {
     private QPayApi $api;
 
@@ -30,11 +30,13 @@ final class AuthorizeAction implements ActionInterface, ApiAwareInterface
     ) {
     }
 
+    /**
+     * @param CreateInvoice $request
+     */
     public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
-        /** @var Generic $request */
         /** @var SyliusPaymentInterface $payment */
         $payment = $request->getModel();
         /** @var OrderInterface $order */
@@ -51,7 +53,7 @@ final class AuthorizeAction implements ActionInterface, ApiAwareInterface
                 } else {
                     $token = $request->getToken();
 
-                    $targetURL = $this->router->generate('payum_notify_do', [
+                    $targetURL = $this->router->generate('payum_capture_do', [
                             'payum_token' => $token->getHash(),
                         ], RouterInterface::ABSOLUTE_URL);
 
@@ -60,7 +62,7 @@ final class AuthorizeAction implements ActionInterface, ApiAwareInterface
                         $targetURL,
                     );
 
-                    $details['status'] = QPayPayment::STATE_NEW;
+                    $details['status'] = QPayPayment::STATE_PROCESSING;
                     $details['invoice'] = $invoice->toArray();
                     $details['notify_url'] = $targetURL;
                 }
@@ -74,12 +76,16 @@ final class AuthorizeAction implements ActionInterface, ApiAwareInterface
         } finally {
             $payment->setDetails($details);
         }
+
+        throw new HttpRedirect($this->router->generate('tsetsee_qpay_plugin_payment_show', [
+            'tokenValue' => $payment->getOrder()->getTokenValue(),
+        ]));
     }
 
     public function supports($request): bool
     {
         return
-            $request instanceof Authorize &&
+            $request instanceof CreateInvoice &&
             $request->getModel() instanceof SyliusPaymentInterface
         ;
     }
