@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tsetsee\SyliusQpayPlugin\Payum;
 
+use Payum\Core\Exception\LogicException;
+use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentInterface;
 use Tsetsee\Qpay\Api\DTO\CheckPaymentRequest;
 use Tsetsee\Qpay\Api\DTO\CheckPaymentResponse;
@@ -48,10 +50,18 @@ final class QPayApi
     ): CreateInvoiceResponse {
         $order = $payment->getOrder();
 
+        if ($order === null) {
+            throw new LogicException('order is not null');
+        }
+
+        if ($payment->getAmount() === null) {
+            throw new LogicException('Payment amount is null');
+        }
+
         return $this->client->createInvoice(CreateInvoiceRequest::from([
             'invoiceCode' => $this->invoiceCode,
             'senderInvoiceNo' => $order->getNumber(),
-            'invoiceReceiverCode' => (string) $order->getCustomer()->getId(),
+            'invoiceReceiverCode' => strval($order->getCustomer()?->getId()),
             'invoiceDescription' => 'invoice no:' . $order->getNumber(),
             'senderBranchCode' => 'CENTRAL',
             'amount' => $payment->getAmount() / 100.0,
