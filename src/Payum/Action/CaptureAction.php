@@ -20,15 +20,11 @@ use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
 use Tsetsee\SyliusQpayPlugin\Payum\Request\CheckPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\Request\CreateInvoice;
 
-final class CaptureAction implements ActionInterface, ApiAwareInterface, GatewayAwareInterface
+final class CaptureAction implements ActionInterface, GatewayAwareInterface
 {
     use GatewayAwareTrait;
 
-    private QPayApi $api;
-
     public function __construct(
-        private LoggerInterface $logger,
-        private UrlGeneratorInterface $router,
     ) {
     }
 
@@ -55,21 +51,5 @@ final class CaptureAction implements ActionInterface, ApiAwareInterface, Gateway
             $request instanceof Capture &&
             $request->getModel() instanceof SyliusPaymentInterface
         ;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setApi($api)
-    {
-        if (!$api instanceof QPayApi) {
-            throw new UnsupportedApiException(sprintf('Not supported api given. It must be an instance of %s', QPayApi::class));
-        }
-
-        $api->setup([
-            'logger' => $this->logger,
-        ]);
-
-        $this->api = $api;
     }
 }

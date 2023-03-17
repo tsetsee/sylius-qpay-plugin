@@ -15,7 +15,7 @@ use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 
 final class StatusAction implements ActionInterface
 {
-    public function __construct(private RouterInterface $router)
+    public function __construct()
     {
     }
 

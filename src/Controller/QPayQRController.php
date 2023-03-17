@@ -38,10 +38,13 @@ final class QPayQRController extends PayumController
         OrderRepositoryInterface $orderRepository,
     ): Response {
         /** @var OrderInterface $order */
-        $order = $orderRepository->findOneByTokenValue((string) $request->attributes->get('payum_token'));
-        $gateway = $this->payum->getGateway('QPay Payment');
+        $order = $orderRepository->findOneByTokenValue(strval($request->attributes->get('payum_token')));
 
-        // $gateway->execute()
+        if ($this->payum === null) {
+            //TODO: write log
+            return new Response('SUCCESS');
+        }
+        $gateway = $this->payum->getGateway('QPay Payment');
 
         return new Response('SUCCESS');
     }

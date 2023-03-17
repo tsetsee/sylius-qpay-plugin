@@ -31,12 +31,13 @@ final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
     }
 
     /**
-     * @param CreateInvoice $request
+     * @inheritdoc
      */
     public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
+        /** @var CreateInvoice $request */
         /** @var SyliusPaymentInterface $payment */
         $payment = $request->getModel();
         /** @var OrderInterface $order */
@@ -52,6 +53,10 @@ final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
                     $details['status'] = QPayPayment::STATE_CANCEL;
                 } else {
                     $token = $request->getToken();
+
+                    if ($token === null) {
+                        return;
+                    }
 
                     $targetURL = $this->router->generate('payum_capture_do', [
                             'payum_token' => $token->getHash(),
@@ -78,7 +83,7 @@ final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
         }
 
         throw new HttpRedirect($this->router->generate('tsetsee_qpay_plugin_payment_show', [
-            'tokenValue' => $payment->getOrder()->getTokenValue(),
+            'tokenValue' => $order->getTokenValue(),
         ]));
     }
 
@@ -93,7 +98,7 @@ final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
     /**
      * @inheritdoc
      */
-    public function setApi($api)
+    public function setApi($api): void
     {
         if (!$api instanceof QPayApi) {
             throw new UnsupportedApiException(sprintf('Not supported api given. It must be an instance of %s', QPayApi::class));
