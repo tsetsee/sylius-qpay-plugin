@@ -1,9 +1,4 @@
 # Delete these routes and define your own shop routes here
-tsetsee_qpay_plugin_callback:
-    path: /payment/capture/qpay/{payum_token}
-    defaults:
-        _controller: Tsetsee\SyliusQpayPlugin\Controller\QPayQRController::callbackAction
-
 tsetsee_qpay_plugin_payment_show:
     path: /{_locale}/payment/qpay/show/{tokenValue}
     controller: sylius.controller.order::showAction

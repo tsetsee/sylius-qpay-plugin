@@ -22,6 +22,7 @@ use Tsetsee\SyliusQpayPlugin\Payum\Request\CreateInvoice;
 
 final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
 {
+    /** @psalm-suppress PropertyNotSetInConstructor */
     private QPayApi $api;
 
     public function __construct(
@@ -37,12 +38,16 @@ final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
-        /** @var CreateInvoice $request */
-        /** @var SyliusPaymentInterface $payment */
+        /**
+         * @var SyliusPaymentInterface $payment
+         * @var CreateInvoice $request
+         */
         $payment = $request->getModel();
+
         /** @var OrderInterface $order */
         $order = $payment->getOrder();
 
+        /** @var array<string, mixed> $details */
         $details = [
             'status' => QPayPayment::STATE_NEW,
         ];
@@ -68,7 +73,7 @@ final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
                     );
 
                     $details['status'] = QPayPayment::STATE_PROCESSING;
-                    $details['invoice'] = $invoice->toArray();
+                    $details['invoice'] = (array)$invoice->toArray();
                     $details['notify_url'] = $targetURL;
                 }
             }
@@ -79,6 +84,7 @@ final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
             $details['status'] = QPayPayment::STATE_CANCEL;
             $details['error'] = $e->getMessage();
         } finally {
+            /** @psalm-suppress MixedMethodCall */
             $payment->setDetails($details);
         }
 

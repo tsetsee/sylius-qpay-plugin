@@ -31,12 +31,12 @@ final class QpayPaymentGatewayFactory extends GatewayFactory
             'payum.factory_title' => 'Qpay Payment',
         ]);
 
-        $config['payum.api'] = function (ArrayObject $config) {
+        $config['payum.api'] = function (ArrayObject $config): QPayApi {
             return new QPayApi(
-                username: strval($config['username']),
-                password: strval($config['password']),
-                env: Env::from(strval($config['env'])),
-                invoiceCode: strval($config['invoiceCode']),
+                username: strval((object)$config['username']),
+                password: strval((object)$config['password']),
+                env: Env::from(strval((object)$config['env'])),
+                invoiceCode: strval((object)$config['invoiceCode']),
             );
         };
     }

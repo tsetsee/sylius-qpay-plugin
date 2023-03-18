@@ -20,6 +20,7 @@ use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
 use Tsetsee\SyliusQpayPlugin\Payum\Request\CheckPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\Request\CreateInvoice;
 
+/** @psalm-suppress PropertyNotSetInConstructor */
 final class CaptureAction implements ActionInterface, GatewayAwareInterface
 {
     use GatewayAwareTrait;
@@ -32,8 +33,10 @@ final class CaptureAction implements ActionInterface, GatewayAwareInterface
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
-        /** @var Generic $request */
-        /** @var SyliusPaymentInterface $payment */
+        /**
+         * @var Generic $request
+         * @var SyliusPaymentInterface $payment
+         */
         $payment = $request->getModel();
 
         $details = $payment->getDetails();

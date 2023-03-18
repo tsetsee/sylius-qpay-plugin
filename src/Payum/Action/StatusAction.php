@@ -23,34 +23,33 @@ final class StatusAction implements ActionInterface
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
-        /** @var Generic $request */
-        $token = $request->getToken();
-
         /** @var SyliusPaymentInterface $payment */
+        /** @var Generic $request */
+        /** @psalm-suppress MixedAssignment, MixedMethodCall */
         $payment = $request->getFirstModel();
 
+        /** @var array<string, mixed> $details */
+        /** @psalm-suppress MixedAssignment, MixedMethodCall */
         $details = $payment->getDetails();
 
-        /** @var GetStatusInterface $request */
-        // if ($payment->getState() === PaymentInterface::STATE_NEW) {
-        //     $request->markPending();
-        //
-        //     return;
-        // }
+        /** @var int $status */
+        /** @psalm-suppress MixedAssignment, MixedArrayAccess */
+        $status = $details['status'];
 
-        if (QPayPayment::STATE_NEW->value === $details['status']) {
+        /** @var GetStatusInterface $request */
+        if (QPayPayment::STATE_NEW->value === $status) {
             $request->markNew();
 
             return;
         }
 
-        if (QPayPayment::STATE_PROCESSING->value === $details['status']) {
+        if (QPayPayment::STATE_PROCESSING->value === $status) {
             $request->markPending();
 
             return;
         }
 
-        if (QPayPayment::STATE_PAID->value === $details['status']) {
+        if (QPayPayment::STATE_PAID->value === $status) {
             $request->markCaptured();
 
             return;

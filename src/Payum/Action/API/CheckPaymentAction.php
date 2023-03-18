@@ -7,6 +7,7 @@ namespace Tsetsee\SyliusQpayPlugin\Payum\Action\API;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
 use Payum\Core\Exception\RequestNotSupportedException;
+use Payum\Core\Exception\RuntimeException;
 use Payum\Core\Exception\UnsupportedApiException;
 use Payum\Core\Reply\HttpRedirect;
 use Psr\Log\LoggerInterface;
@@ -20,6 +21,7 @@ use Tsetsee\SyliusQpayPlugin\Payum\Request\CheckPayment;
 
 class CheckPaymentAction implements ActionInterface, ApiAwareInterface
 {
+    /** @psalm-suppress PropertyNotSetInConstructor */
     private QPayApi $api;
 
     public function __construct(
@@ -35,16 +37,23 @@ class CheckPaymentAction implements ActionInterface, ApiAwareInterface
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
-        /** @var SyliusPaymentInterface $payment */
-        /** @var CheckPayment $request */
+        /**
+         * @var SyliusPaymentInterface $payment
+         * @var CheckPayment $request
+         */
         $payment = $request->getFirstModel();
 
         $details = $payment->getDetails();
 
-        $qpayInvoice = $this->api->getInvoice($details['invoice']['invoice_id']);
+        if(!isset($details['invoice']) || !is_array($details['invoice'])) {
+            throw new RuntimeException('bad invoice array');
+        }
+
+        $qpayInvoice = $this->api->getInvoice(strval((object)$details['invoice']['invoice_id']));
 
         if ($qpayInvoice->invoiceStatus === 'PAID') {
             $details['status'] = QPayPayment::STATE_PAID;
+        /** @psalm-suppress MixedAssignment */
             $details['invoice_status'] = $qpayInvoice->toArray();
 
             $payment->setDetails($details);

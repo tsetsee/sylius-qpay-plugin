@@ -6,6 +6,7 @@ namespace Tsetsee\SyliusQpayPlugin\Payum\Request;
 
 use Payum\Core\Request\Generic;
 
+/** @psalm-suppress PropertyNotSetInConstructor */
 class CreateInvoice extends Generic
 {
 }

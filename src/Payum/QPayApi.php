@@ -17,8 +17,9 @@ use Tsetsee\Qpay\Api\Enum\Env;
 use Tsetsee\Qpay\Api\Enum\ObjectType;
 use Tsetsee\Qpay\Api\QPayApi as ApiQPayApi;
 
-final class QPayApi
+class QPayApi
 {
+    /** @psalm-suppress PropertyNotSetInConstructor */
     private ApiQPayApi $client;
 
     public function __construct(
@@ -30,7 +31,7 @@ final class QPayApi
     }
 
     /**
-     * @param array $options - [
+     * @param array<string, mixed> $options - [
      *      ?Psr\Log\LoggerInterface $logger
      * ]
      */
@@ -54,17 +55,27 @@ final class QPayApi
             throw new LogicException('order is not null');
         }
 
-        if ($payment->getAmount() === null) {
+        $amount = $payment->getAmount();
+        if ($amount === null) {
             throw new LogicException('Payment amount is null');
         }
+
+        $customer = $order->getCustomer();
+
+        if ($customer === null) {
+            throw new LogicException('Customer not found in the order');
+        }
+
+        /** @var int $customerId */
+        $customerId = $customer->getId();
 
         return $this->client->createInvoice(CreateInvoiceRequest::from([
             'invoiceCode' => $this->invoiceCode,
             'senderInvoiceNo' => $order->getNumber(),
-            'invoiceReceiverCode' => strval($order->getCustomer()?->getId()),
-            'invoiceDescription' => 'invoice no:' . $order->getNumber(),
+            'invoiceReceiverCode' => strval($customerId),
+            'invoiceDescription' => 'invoice no: ' . ($order->getNumber() ?? 'no number'),
             'senderBranchCode' => 'CENTRAL',
-            'amount' => $payment->getAmount() / 100.0,
+            'amount' => $amount / 100.0,
             // 'callbackUrl' => $this->urlGenerator->generate('payum_capture_do', [
             //     'payum_token' => $request->getToken()->getHash(),
             // ]),

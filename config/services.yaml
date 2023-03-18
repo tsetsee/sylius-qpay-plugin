@@ -7,8 +7,8 @@ parameters:
 
 services:
     Tsetsee\SyliusQpayPlugin\Controller\QPayQRController:
-        public: true
         autowire: true
+        public: true
         tags:
             - {name: 'controller.service_arguments'}
 
@@ -18,8 +18,8 @@ services:
             - {name: form.type}
 
     qpay.sylius_payment:
-        class: Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder
         arguments: [Tsetsee\SyliusQpayPlugin\Payum\QpayPaymentGatewayFactory]
+        class: Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder
         tags:
             - {name: payum.gateway_factory_builder, factory: qpay}
 
