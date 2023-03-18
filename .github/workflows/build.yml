@@ -188,3 +188,15 @@ jobs:
                     name: Behat logs
                     path: etc/build/
                     if-no-files-found: ignore
+
+    release:
+        name: Release
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-node@v2
+          - name: Release
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            run: npx semantic-release
+
