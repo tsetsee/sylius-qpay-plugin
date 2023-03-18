@@ -29,7 +29,7 @@ behat:
 
 init: install backend frontend
 
-ci: init phpstan psalm phpunit phpspec # behat
+ci: init phpstan psalm phpunit phpspec behat
 
 integration: init phpunit behat
 
