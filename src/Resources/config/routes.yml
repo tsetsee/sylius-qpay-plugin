@@ -1,0 +1,2 @@
+tsetsee_qpay_shop_routing:
+    resource: './routing/shop_routing.yml'

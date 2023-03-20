@@ -43,13 +43,14 @@ class CheckPaymentAction implements ActionInterface, ApiAwareInterface
          */
         $payment = $request->getFirstModel();
 
+        /** @var array{invoice?: array{invoice_id: string}} $details */
         $details = $payment->getDetails();
 
-        if(!isset($details['invoice']) || !is_array($details['invoice'])) {
+        if(!isset($details['invoice'])) {
             throw new RuntimeException('bad invoice array');
         }
 
-        $qpayInvoice = $this->api->getInvoice(strval((object)$details['invoice']['invoice_id']));
+        $qpayInvoice = $this->api->getInvoice(strval($details['invoice']['invoice_id']));
 
         if ($qpayInvoice->invoiceStatus === 'PAID') {
             $details['status'] = QPayPayment::STATE_PAID;

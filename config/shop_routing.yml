@@ -1,22 +1,3 @@
 # Delete these routes and define your own shop routes here
-tsetsee_qpay_plugin_payment_show:
-    path: /{_locale}/payment/qpay/show/{tokenValue}
-    controller: sylius.controller.order::showAction
-    defaults:
-        _sylius:
-            template: '@TsetseeSyliusQpayPlugin/show.html.twig'
-            repository:
-                method: findOneBy
-                arguments:
-                     - {tokenValue: $tokenValue}
-
-# sylius_shop_order_pay:
-#     path: /{_locale}/order/{tokenValue}/pay
-#     controller: sylius.controller.payum::prepareCaptureAction
-#     defaults:
-#         _sylius:
-#             redirect:
-#                 # route: payum_notify_do
-#                 route: tsetsee_qpay_plugin_payment_show
-#                 parameters:
-#                     tokenValue: $tokenValue
+tsetsee_qpay_shop:
+    resource: '../src/Resources/config/routing/shop_routing.yml'

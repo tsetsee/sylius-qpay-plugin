@@ -1,0 +1,10 @@
+tsetsee_qpay_plugin_payment_show:
+    path: /{_locale}/payment/qpay/show/{tokenValue}
+    controller: sylius.controller.order::showAction
+    defaults:
+        _sylius:
+            template: '@TsetseeSyliusQpayPlugin/show.html.twig'
+            repository:
+                method: findOneBy
+                arguments:
+                     - {tokenValue: $tokenValue}
