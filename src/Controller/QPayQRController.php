@@ -25,7 +25,7 @@ final class QPayQRController extends PayumController
         $order = $orderRepository->find($orderId);
 
         /** @var ModelPaymentInterface $payment */
-        $payment = $order->getLastPayment(PaymentInterface::STATE_PROCESSING);
+        $payment = $order->getLastPayment(PaymentInterface::STATE_NEW);
 
         $details = $payment->getDetails();
 

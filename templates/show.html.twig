@@ -7,14 +7,10 @@
 {% block content %}
     <div class="ui segment">
 
-        {% set payment = order.lastPayment('processing') %}
+        {% set payment = order.lastPayment('new') %}
 
         {% if payment %}
             {% include '@TsetseeSyliusQpayPlugin/qr.html.twig' with payment.details %}
         {% endif%}
-        {#
-        {% if order.paymentState in ['awaiting_payment'] %}
-        {{ render(controller('Tsetsee\\SyliusQpayPlugin\\Controller\\QPayQRController::renderQRAction', {id: order.id })) }}
-        #}
     </div>
 {% endblock %}
