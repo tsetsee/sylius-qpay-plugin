@@ -38,7 +38,7 @@ final class StatusAction implements ActionInterface
         }
 
         if (QPayPayment::STATE_PROCESSING->value === $status) {
-            $request->markPending();
+            $request->markNew();
 
             return;
         }
