@@ -5,46 +5,54 @@ declare(strict_types=1);
 namespace Tsetsee\SyliusQpayPlugin\Payum\Action;
 
 use Payum\Core\Action\ActionInterface;
-use Payum\Core\ApiAwareInterface;
+use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Core\Exception\UnsupportedApiException;
 use Payum\Core\GatewayAwareInterface;
 use Payum\Core\GatewayAwareTrait;
 use Payum\Core\Request\Capture;
-use Payum\Core\Request\Generic;
-use Psr\Log\LoggerInterface;
+use Payum\Core\Request\Sync;
+use Payum\Core\Security\GenericTokenFactoryAwareInterface;
+use Payum\Core\Security\GenericTokenFactoryAwareTrait;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
-use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
-use Tsetsee\SyliusQpayPlugin\Payum\Request\CheckPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\Request\CreateInvoice;
 
 /** @psalm-suppress PropertyNotSetInConstructor */
-final class CaptureAction implements ActionInterface, GatewayAwareInterface
+final class CaptureAction implements ActionInterface, GatewayAwareInterface, GenericTokenFactoryAwareInterface
 {
     use GatewayAwareTrait;
-
-    public function __construct(
-    ) {
-    }
+    use GenericTokenFactoryAwareTrait;
 
     public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
         /**
-         * @var Generic $request
+         * @var Capture $request
          * @var SyliusPaymentInterface $payment
          */
         $payment = $request->getModel();
 
-        $details = $payment->getDetails();
+        $details = ArrayObject::ensureArrayObject($payment->getDetails());
 
-        if (!isset($details['status'])) {
-            $this->gateway->execute(new CreateInvoice($request->getToken()));
-        } elseif ($details['status'] === QPayPayment::STATE_PROCESSING->value) {
-            $this->gateway->execute(new CheckPayment($request->getToken()));
+        $token = $request->getToken();
+        if ($token === null) {
+            return;
+        }
+
+        $notifyToken = $this->tokenFactory->createNotifyToken(
+            $token->getGatewayName(),
+            $token->getDetails(),
+        );
+
+        if ($details['status'] === null) {
+            $details['status'] = QPayPayment::STATE_NEW->value;
+            $details['notification_url'] = $notifyToken->getTargetUrl();
+
+            $payment->setDetails((array) $details);
+            $this->gateway->execute(new CreateInvoice($request->getModel()));
+        } else {
+            $this->gateway->execute(new Sync($payment->getDetails()));
         }
     }
 

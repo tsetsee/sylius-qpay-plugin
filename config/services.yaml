@@ -38,6 +38,16 @@ services:
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.status}
 
+    Tsetsee\SyliusQpayPlugin\Payum\Action\SyncAction:
+        public: true
+        tags:
+            - {name: payum.action, factory: qpay, alias: payum.action.sync}
+
+    Tsetsee\SyliusQpayPlugin\Payum\Action\NotifyAction:
+        public: true
+        tags:
+            - {name: payum.action, factory: qpay, alias: payum.action.notify}
+
     Tsetsee\SyliusQpayPlugin\Payum\Action\ResolveNextRouteAction:
         public: true
         arguments:
@@ -50,7 +60,6 @@ services:
         public: true
         arguments:
             - '@logger'
-            - '@router'
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.check_payment}
 
@@ -58,6 +67,10 @@ services:
         public: true
         arguments:
             - '@logger'
-            - '@router'
         tags:
             - {name: payum.action, factory: qpay, alias: payum.action.create_invoice}
+
+    Tsetsee\SyliusQpayPlugin\EventListener\OrderListener:
+        autowire: true
+        autoconfigure: true
+

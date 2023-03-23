@@ -7,7 +7,7 @@
 {% block content %}
     <div class="ui segment">
 
-        {% set payment = order.lastPayment('new') %}
+        {% set payment = order.lastPayment('processing') %}
 
         {% if payment %}
             {% include '@TsetseeSyliusQpayPlugin/qr.html.twig' with payment.details %}

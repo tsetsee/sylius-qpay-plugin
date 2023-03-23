@@ -10,14 +10,9 @@ use Payum\Core\Exception\RequestNotSupportedException;
 use Sylius\Bundle\PayumBundle\Request\ResolveNextRoute;
 use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class ResolveNextRouteAction implements ActionInterface
 {
-    public function __construct(
-    ) {
-    }
-
     /**
      * @inheritdoc
      */

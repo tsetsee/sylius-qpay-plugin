@@ -27,6 +27,12 @@ frontend:
 behat:
 	APP_ENV=test vendor/bin/behat --colors --strict --no-interaction -vvv -f progress
 
+ecs:
+	-vendor/bin/ecs check src/ --fix
+
+chown:
+	chown -R 1000:1000 src/
+
 init: install backend frontend
 
 ci: init phpstan psalm phpunit phpspec behat
@@ -34,3 +40,5 @@ ci: init phpstan psalm phpunit phpspec behat
 integration: init phpunit behat
 
 static: install phpspec phpstan psalm
+
+fix: ecs chown

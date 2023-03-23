@@ -7,14 +7,12 @@ namespace Tsetsee\SyliusQpayPlugin\Payum\Action\API;
 use GuzzleHttp\Exception\RequestException;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
+use Payum\Core\Bridge\Spl\ArrayObject;
+use Payum\Core\Exception\LogicException;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Exception\UnsupportedApiException;
-use Payum\Core\Reply\HttpRedirect;
 use Psr\Log\LoggerInterface;
-use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
-use Sylius\Component\Payment\Model\PaymentInterface;
-use Symfony\Component\Routing\RouterInterface;
 use Tsetsee\Qpay\Api\Exception\BadResponseException;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
@@ -27,7 +25,6 @@ final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
 
     public function __construct(
         private LoggerInterface $logger,
-        private RouterInterface $router,
     ) {
     }
 
@@ -44,53 +41,63 @@ final class CreateInvoiceAction implements ActionInterface, ApiAwareInterface
          */
         $payment = $request->getModel();
 
-        /** @var OrderInterface $order */
-        $order = $payment->getOrder();
+        $details = ArrayObject::ensureArrayObject($payment->getDetails());
 
-        /** @var array<string, mixed> $details */
-        $details = [
-            'status' => QPayPayment::STATE_NEW,
-        ];
+        /** @var ?int $status */
+        $status = $details['status'];
+
+        if ($status !== QPayPayment::STATE_NEW->value) {
+            throw new LogicException('invalid status code: ' . (string) $status);
+        }
 
         try {
-            if ($payment->getState() === PaymentInterface::STATE_NEW) {
-                if ($payment->getAmount() === null) {
-                    $details['status'] = QPayPayment::STATE_CANCEL;
-                } else {
-                    $token = $request->getToken();
+            if ($payment->getAmount() === null) {
+                $details['status'] = QPayPayment::STATE_CANCEL->value;
 
-                    if ($token === null) {
-                        return;
-                    }
-
-                    $targetURL = $this->router->generate('payum_capture_do', [
-                            'payum_token' => $token->getHash(),
-                        ], RouterInterface::ABSOLUTE_URL);
-
-                    $invoice = $this->api->createInvoice(
-                        $payment,
-                        $targetURL,
-                    );
-
-                    $details['status'] = QPayPayment::STATE_PROCESSING;
-                    $details['invoice'] = (array)$invoice->toArray();
-                    $details['notify_url'] = $targetURL;
-                }
+                return;
             }
+
+            $order = $payment->getOrder();
+
+            if ($order === null) {
+                throw new LogicException('Order not found');
+            }
+
+            $customer = $order->getCustomer();
+
+            if ($customer === null) {
+                throw new LogicException('Customer not found in the order');
+            }
+
+            $amount = $payment->getAmount();
+
+            if ($amount == null) {
+                throw new LogicException('amount is null');
+            }
+
+            /** @var int $customerId */
+            $customerId = $customer->getId();
+
+            $invoice = $this->api->createInvoice([
+                'senderInvoiceNo' => $order->getNumber(),
+                'invoiceReceiverCode' => (string) $customerId,
+                'invoiceDescription' => 'invoice no: ' . ($order->getNumber() ?? 'no number'),
+                'senderBranchCode' => 'CENTRAL',
+                'amount' => $amount / 100.0,
+                'callbackUrl' => $details['notification_url'],
+            ]);
+
+            $details['status'] = QPayPayment::STATE_PROCESSING->value;
+            $details['invoice'] = (array) $invoice->toArray();
         } catch (RequestException $exception) {
             $response = $exception->getResponse();
             $details['status'] = $response?->getStatusCode();
         } catch(BadResponseException $e) {
-            $details['status'] = QPayPayment::STATE_CANCEL;
+            $details['status'] = QPayPayment::STATE_CANCEL->value;
             $details['error'] = $e->getMessage();
-        } finally {
-            /** @psalm-suppress MixedMethodCall */
-            $payment->setDetails($details);
         }
 
-        throw new HttpRedirect($this->router->generate('tsetsee_qpay_plugin_payment_show', [
-            'tokenValue' => $order->getTokenValue(),
-        ]));
+        $payment->setDetails((array) $details);
     }
 
     public function supports($request): bool

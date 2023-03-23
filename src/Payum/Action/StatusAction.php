@@ -9,16 +9,10 @@ use Payum\Core\Exception\RequestNotSupportedException;
 use Payum\Core\Request\Generic;
 use Payum\Core\Request\GetStatusInterface;
 use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
-use Sylius\Component\Payment\Model\PaymentInterface;
-use Symfony\Component\Routing\RouterInterface;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 
 final class StatusAction implements ActionInterface
 {
-    public function __construct()
-    {
-    }
-
     public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);

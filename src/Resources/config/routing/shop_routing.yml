@@ -4,6 +4,7 @@ tsetsee_qpay_plugin_payment_show:
     defaults:
         _sylius:
             template: '@TsetseeSyliusQpayPlugin/show.html.twig'
+            event: qpay_show
             repository:
                 method: findOneBy
                 arguments:

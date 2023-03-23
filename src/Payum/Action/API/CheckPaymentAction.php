@@ -6,15 +6,11 @@ namespace Tsetsee\SyliusQpayPlugin\Payum\Action\API;
 
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\ApiAwareInterface;
+use Payum\Core\Bridge\Spl\ArrayObject;
+use Payum\Core\Exception\LogicException;
 use Payum\Core\Exception\RequestNotSupportedException;
-use Payum\Core\Exception\RuntimeException;
 use Payum\Core\Exception\UnsupportedApiException;
-use Payum\Core\Reply\HttpRedirect;
 use Psr\Log\LoggerInterface;
-use Sylius\Component\Core\Model\OrderInterface;
-use Sylius\Component\Core\Model\PaymentInterface as SyliusPaymentInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Routing\RouterInterface;
 use Tsetsee\SyliusQpayPlugin\Model\QPayPayment;
 use Tsetsee\SyliusQpayPlugin\Payum\QPayApi;
 use Tsetsee\SyliusQpayPlugin\Payum\Request\CheckPayment;
@@ -26,51 +22,41 @@ class CheckPaymentAction implements ActionInterface, ApiAwareInterface
 
     public function __construct(
         private LoggerInterface $logger,
-        private UrlGeneratorInterface $router,
     ) {
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
-        /**
-         * @var SyliusPaymentInterface $payment
-         * @var CheckPayment $request
-         */
-        $payment = $request->getFirstModel();
+        /** @var CheckPayment $request */
+        $details = ArrayObject::ensureArrayObject($request->getModel());
 
-        /** @var array{invoice?: array{invoice_id: string}} $details */
-        $details = $payment->getDetails();
-
-        if(!isset($details['invoice'])) {
-            throw new RuntimeException('bad invoice array');
+        if (!isset($details['invoice'])) {
+            throw new LogicException('bad invoice array');
         }
 
-        $qpayInvoice = $this->api->getInvoice(strval($details['invoice']['invoice_id']));
+        /** @var array<string, mixed> $invoice */
+        $invoice = $details['invoice'];
+
+        /** @var ?string $invoiceId */
+        $invoiceId = $invoice['invoice_id'] ?? null;
+
+        if ($invoiceId === null) {
+            throw new LogicException('invoice_id field not found in invoice array');
+        }
+
+        $qpayInvoice = $this->api->getInvoice($invoiceId);
+
+        /** @psalm-suppress MixedAssignment */
+        $details['invoice_details'] = $qpayInvoice->toArray();
 
         if ($qpayInvoice->invoiceStatus === 'PAID') {
-            $details['status'] = QPayPayment::STATE_PAID;
-        /** @psalm-suppress MixedAssignment */
-            $details['invoice_status'] = $qpayInvoice->toArray();
-
-            $payment->setDetails($details);
-
-            return;
+            $details['status'] = QPayPayment::STATE_PAID->value;
         }
-
-        /** @var SyliusPaymentInterface $payment */
-        $payment = $request->getFirstModel();
-
-        /** @var OrderInterface $order */
-        $order = $payment->getOrder();
-
-        throw new HttpRedirect($this->router->generate('tsetsee_qpay_plugin_payment_show', [
-            'tokenValue' => $order->getTokenValue(),
-        ]));
     }
 
     /**
@@ -80,7 +66,7 @@ class CheckPaymentAction implements ActionInterface, ApiAwareInterface
     {
         return
             $request instanceof CheckPayment &&
-            $request->getFirstModel() instanceof SyliusPaymentInterface
+            $request->getModel() instanceof \ArrayAccess
         ;
     }
 

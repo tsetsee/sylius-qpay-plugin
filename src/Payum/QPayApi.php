@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tsetsee\SyliusQpayPlugin\Payum;
 
-use Payum\Core\Exception\LogicException;
-use Sylius\Component\Core\Model\OrderInterface;
-use Sylius\Component\Core\Model\PaymentInterface;
 use Tsetsee\Qpay\Api\DTO\CheckPaymentRequest;
 use Tsetsee\Qpay\Api\DTO\CheckPaymentResponse;
 use Tsetsee\Qpay\Api\DTO\CreateInvoiceRequest;
@@ -45,42 +42,16 @@ class QPayApi
         );
     }
 
-    public function createInvoice(
-        PaymentInterface $payment,
-        string $callbackURL,
-    ): CreateInvoiceResponse {
-        $order = $payment->getOrder();
-
-        if ($order === null) {
-            throw new LogicException('order is not null');
-        }
-
-        $amount = $payment->getAmount();
-        if ($amount === null) {
-            throw new LogicException('Payment amount is null');
-        }
-
-        $customer = $order->getCustomer();
-
-        if ($customer === null) {
-            throw new LogicException('Customer not found in the order');
-        }
-
-        /** @var int $customerId */
-        $customerId = $customer->getId();
-
-        return $this->client->createInvoice(CreateInvoiceRequest::from([
-            'invoiceCode' => $this->invoiceCode,
-            'senderInvoiceNo' => $order->getNumber(),
-            'invoiceReceiverCode' => strval($customerId),
-            'invoiceDescription' => 'invoice no: ' . ($order->getNumber() ?? 'no number'),
-            'senderBranchCode' => 'CENTRAL',
-            'amount' => $amount / 100.0,
-            // 'callbackUrl' => $this->urlGenerator->generate('payum_capture_do', [
-            //     'payum_token' => $request->getToken()->getHash(),
-            // ]),
-            'callbackUrl' => $callbackURL,
-        ]));
+    /**
+     * @param array<string, mixed> $details
+     */
+    public function createInvoice(array $details): CreateInvoiceResponse
+    {
+        return $this->client->createInvoice(
+            CreateInvoiceRequest::from(
+                array_merge(['invoiceCode' => $this->invoiceCode], $details),
+            ),
+        );
     }
 
     public function getInvoice(string $invoiceId): GetInvoiceResponse
