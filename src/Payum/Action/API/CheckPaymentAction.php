@@ -54,7 +54,7 @@ class CheckPaymentAction implements ActionInterface, ApiAwareInterface
         /** @psalm-suppress MixedAssignment */
         $details['invoice_details'] = $qpayInvoice->toArray();
 
-        if ($qpayInvoice->invoiceStatus === 'PAID') {
+        if ($qpayInvoice->invoiceStatus === 'CLOSED') {
             $details['status'] = QPayPayment::STATE_PAID->value;
         }
     }
